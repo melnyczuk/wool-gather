@@ -1,0 +1,29 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+fire = "*"
+keras = "*"
+opencv-python = "*"
+pillow = "*"
+tensorflow = "*"
+transformers = "*"
+
+[dev-packages]
+black = "==20.8b1"
+data-science-types = "*"
+flake8 = "*"
+isort = "*"
+mypy = "*"
+
+[requires]
+python_version = "3.8"
+
+[scripts]
+cli = "python -m src.Cli"
+format = "black -l 80 ."
+lint = "flake8 --max-line-length 80 src"
+sort = "isort --atomic ."
+typecheck = "mypy src"
