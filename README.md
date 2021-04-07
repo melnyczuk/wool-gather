@@ -1,10 +1,32 @@
-# Cloud Reader
+# Cloud Stories
 
-![](https://i.pinimg.com/originals/b0/be/d0/b0bed08fc3f26cf9ebf6be9e5f11755c.gif)
+Telling stories about the future by watching clouds.
 
+![](https://data.whicdn.com/images/208932206/original.gif)
 
 ## Running
+Run the main programme:
+```
+  $ pipenv run cli main
+```
 
+List all available options:
+```
+  $ pipenv run cli
+```
+
+## Install
+Uses [pipenv](https://pipenv.pypa.io/en/latest/)
+
+```
+  $ pipenv --python 3.8
+  $ pipenv install
+  $ pipenv install --dev
+```
+
+
+## Dataset
+https://www.dropbox.com/s/ff65gd4n4deslem/cloud-stories.zip?dl=0
 
 ## Convert TensorFlow checkpoints to PyTorch model
 ```

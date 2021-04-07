@@ -7,7 +7,7 @@ from src.TextGenerator import TextGenerator
 
 class CLI:
     @staticmethod
-    def run():
+    def main():
         p = MultiProc()
         p.loop()
         return
