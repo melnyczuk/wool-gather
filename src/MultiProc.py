@@ -4,10 +4,22 @@ import cv2  # type:ignore
 import numpy as np
 
 
+class Story:
+    def generate(self: "Story", text_input: str) -> None:
+        from src.TextGenerator import TextGenerator
+
+        txtGen = TextGenerator(line_len=50, max_len=500)
+        for sentence in txtGen.get_sentences(text_input):
+            self.queue.put(sentence)
+        return
+
+    def __init__(self: "Story", queue: Queue):
+        self.queue = queue
+        return
+
+
 class MultiProc:
     def loop(self: "MultiProc"):
-        from src.Story import Story
-
         queue: Queue = Queue(8)
         story = Story(queue)
         process = None
@@ -21,8 +33,6 @@ class MultiProc:
             if i % 100 == 0:
                 caption = "..." if queue.empty() else queue.get()
                 if not process or not process.is_alive():
-                    print("new process")
-                    process = None  # do I need this?
                     label = self.__generate_label(frame, caption)
                     process = Process(target=story.generate, args=(label,))
                     process.start()

@@ -14,11 +14,9 @@ class ObjectDetector:
     model: VGG16
 
     def __init__(self: "ObjectDetector"):
-        print("init ObjectDetector")
         self.model = VGG16(weights="imagenet")
 
     def predict(self: "ObjectDetector", frame: np.ndarray) -> List[Prediction]:
-        # classify the image
         image = self.__prepare_image(frame)
         preds, *_ = decode_predictions(self.model.predict(image))
         return preds

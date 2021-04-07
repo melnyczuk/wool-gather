@@ -38,10 +38,8 @@ class CLI:
     def generate_text(input_text: str):
         tg = TextGenerator()
         text = input_text
-        while True:
-            text = "".join(tg.get_sentences(text))
-            if text == "":
-                break
+        for i, line in enumerate(tg.get_sentences(text)):
+            print(f"{i}:\t", line)
         return
 
 
