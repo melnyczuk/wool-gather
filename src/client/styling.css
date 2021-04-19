@@ -1,0 +1,23 @@
+#webcam {
+  width: 100%;
+  height: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+#subtitles {
+  position: absolute;
+  padding: 16px;
+  margin: 16px auto;
+  width: 80vw;
+  height: auto;
+  bottom: 0;
+  left: 10vw;
+  color: white;
+  background-color: black;
+  font-size: 20pt;
+  font-family: sans-serif;
+  text-align: center;
+}
