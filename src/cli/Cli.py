@@ -1,20 +1,20 @@
 import cv2  # type: ignore
 
-from src.MultiProc import MultiProc
-from src.ObjectDetector import ObjectDetector
-from src.TextGenerator import TextGenerator
+from src.app import ObjectDetector, TextGenerator
+
+from .MultiProc import MultiProc
 
 
-class CLI:
+class Cli:
     @staticmethod
-    def main():
+    def test_main_process(device: int = 0):
         p = MultiProc()
-        p.loop()
+        p.loop(device)
         return
 
     @staticmethod
-    def test_webcam():
-        cap = cv2.VideoCapture(0)
+    def test_webcam(device: int = 0):
+        cap = cv2.VideoCapture(device)
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -41,9 +41,3 @@ class CLI:
         for i, line in enumerate(tg.get_sentences(text)):
             print(f"{i}:\t", line)
         return
-
-
-if __name__ == "__main__":
-    from fire import Fire  # type: ignore
-
-    Fire(CLI())

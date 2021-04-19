@@ -1,4 +1,5 @@
 import os
+import re
 from textwrap import wrap
 from typing import List
 
@@ -19,11 +20,19 @@ class TextGenerator:
     generator: Pipeline
     model_dir: str
 
+    def generate(self: "TextGenerator", seed_str: str) -> str:
+        data, *_ = self.generator(
+            seed_str[: self.max_len - 1],
+            max_length=self.max_len,
+            num_return_sequences=1,
+        )
+        return self.__clean(data["generated_text"])
+
     def get_sentences(
         self: "TextGenerator",
         seed_str: str,
     ) -> List[str]:
-        return wrap(self.__generate(seed_str), self.line_len)
+        return wrap(self.generate(seed_str), self.line_len)
 
     def __init__(
         self: "TextGenerator",
@@ -49,16 +58,9 @@ class TextGenerator:
         set_seed(42)
         return
 
-    def __generate(self: "TextGenerator", input: str) -> str:
-        data, *_ = self.generator(
-            input[: self.max_len - 1],
-            max_length=self.max_len,
-            num_return_sequences=1,
-        )
-        return self.__clean(data["generated_text"])
-
     def __clean(self: "TextGenerator", input: str) -> str:
-        return input.replace("\n", " ").replace('"', "")
+        tmp = input.replace("\n", " ").replace('"', "")
+        return re.sub(r"\.[a-zA-Z]/g", r".\n[a-zA-Z]", tmp)
 
     def __model_path(self: "TextGenerator", target_file: str) -> str:
         return os.path.join(self.model_dir, target_file)

@@ -6,7 +6,7 @@ import numpy as np
 
 class Story:
     def generate(self: "Story", text_input: str) -> None:
-        from src.TextGenerator import TextGenerator
+        from src.app import TextGenerator
 
         txtGen = TextGenerator(line_len=50, max_len=500)
         for sentence in txtGen.get_sentences(text_input):
@@ -19,12 +19,12 @@ class Story:
 
 
 class MultiProc:
-    def loop(self: "MultiProc"):
+    def loop(self: "MultiProc", device=0):
         queue: Queue = Queue(8)
         story = Story(queue)
         process = None
         i = 0
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(device)
 
         while True:
             ret, frame = cap.read()
@@ -36,6 +36,7 @@ class MultiProc:
                     label = self.__generate_label(frame, caption)
                     process = Process(target=story.generate, args=(label,))
                     process.start()
+            cv2.putText(frame, label, (100, 100), 0, 0.5, (255, 100, 100), 2)
             cv2.putText(frame, caption, (100, 600), 0, 0.8, (255, 255, 255), 2)
             cv2.imshow("frame", frame)
             i += 1
@@ -48,7 +49,7 @@ class MultiProc:
         return
 
     def __init__(self: "MultiProc"):
-        from src.ObjectDetector import ObjectDetector
+        from src.app import ObjectDetector
 
         self.od = ObjectDetector()
         return
