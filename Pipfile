@@ -11,6 +11,7 @@ pillow = "*"
 tensorflow = "*"
 torch = "*"
 transformers = "*"
+unidecode = "*"
 websockets = "*"
 
 [dev-packages]
@@ -24,7 +25,7 @@ mypy = "*"
 python_version = "3.8"
 
 [scripts]
-cli = "python -m src.cli"
+cli = "python -m src.cli.Cli"
 format = "black -l 80 ."
 lint = "flake8 --max-line-length 80 ."
 sort = "isort --atomic ."

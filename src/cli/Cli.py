@@ -1,4 +1,5 @@
 import cv2  # type: ignore
+from fire import Fire  # type: ignore
 
 from src.app import ObjectDetector, TextGenerator
 
@@ -6,23 +7,13 @@ from .MultiProc import MultiProc
 
 
 class Cli:
+    def __init__(self: "Cli"):
+        Fire(self)
+
     @staticmethod
     def test_main_process(device: int = 0):
         p = MultiProc()
         p.loop(device)
-        return
-
-    @staticmethod
-    def test_webcam(device: int = 0):
-        cap = cv2.VideoCapture(device)
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            cv2.imshow("test", frame)
-            cv2.waitKey(0)
-        cap.release()
-        cv2.destroyAllWindows()
         return
 
     @staticmethod
@@ -36,8 +27,12 @@ class Cli:
 
     @staticmethod
     def generate_text(input_text: str):
-        tg = TextGenerator()
+        tg = TextGenerator(model_dir="data/folktales")
         text = input_text
         for i, line in enumerate(tg.get_sentences(text)):
             print(f"{i}:\t", line)
         return
+
+
+if __name__ == "__main__":
+    Cli()

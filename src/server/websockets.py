@@ -10,11 +10,7 @@ from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
 from websockets.server import WebSocketServerProtocol
 
 from src.app import ObjectDetector, TextGenerator
-
-
-def seed_from(labels):
-    (one, two, three, *_) = (lab.replace("_", " ") for lab in labels[::-1])
-    return f"A {one} and a {two} and a {three} "
+from src.app.utils import seed_from
 
 
 class Server(object):
@@ -60,7 +56,7 @@ class Server(object):
             return
         except ConnectionClosedError as err:
             print(f"WS connection closed unexpectedly: {err.code} {err.reason}")
-            pass
+            return
         return
 
     async def __route(

@@ -12,6 +12,7 @@ from transformers import (  # type: ignore
     set_seed,
 )
 from transformers.pipelines.base import Pipeline  # type: ignore
+from unidecode import unidecode
 
 
 class TextGenerator:
@@ -39,6 +40,7 @@ class TextGenerator:
         model_dir: str = "data",
         line_len: int = 20,
         max_len: int = 100,
+        seed: int = 42,
     ) -> None:
         self.line_len = line_len
         self.max_len = max_len
@@ -55,12 +57,16 @@ class TextGenerator:
             model=model,
             tokenizer=tokenizer,
         )
-        set_seed(42)
+        set_seed(seed)
         return
-
-    def __clean(self: "TextGenerator", input: str) -> str:
-        tmp = input.replace("\n", " ").replace('"', "")
-        return re.sub(r"\.[a-zA-Z]/g", r".\n[a-zA-Z]", tmp)
 
     def __model_path(self: "TextGenerator", target_file: str) -> str:
         return os.path.join(self.model_dir, target_file)
+
+    def __clean(self: "TextGenerator", input: str) -> str:
+        [*tmps, _] = re.sub(
+            r"([.!?])\s*([a-zA-Z])",
+            lambda m: f"{m.groups()[0]}|{m.groups()[1]}",
+            unidecode(input).replace("\n", " ").replace('"', ""),
+        ).split("|")
+        return " ".join(tmps)
