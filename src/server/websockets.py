@@ -1,7 +1,8 @@
 import asyncio
+import json
 from asyncio.events import AbstractEventLoop
 from base64 import b64decode
-from typing import List, Union
+from typing import Dict, List, Union
 
 import cv2  # type:ignore
 import numpy as np
@@ -16,6 +17,7 @@ from src.app.utils import seed_from
 class Server(object):
     host: str
     port: int
+    line_len: int
     object_detector: ObjectDetector
     text_generator: TextGenerator
     event_loop: AbstractEventLoop
@@ -29,6 +31,7 @@ class Server(object):
     def __init__(self: "Server", host: str = "127.0.0.1", port: int = 4242):
         self.host = host
         self.port = port
+        self.line_len = 50
         self.object_detector = ObjectDetector()
         self.text_generator = TextGenerator(model_dir="data/folktales")
         self.event_loop = asyncio.get_event_loop()
@@ -51,7 +54,7 @@ class Server(object):
         result = await task
 
         try:
-            await websocket.send(result)
+            await websocket.send(json.dumps(result))
         except ConnectionClosedOK:
             return
         except ConnectionClosedError as err:
@@ -63,26 +66,30 @@ class Server(object):
         self: "Server",
         path: str,
         data: Union[str, bytes],
-    ) -> str:
+    ) -> Union[str, Dict[str, List[str]]]:
         if path == "/":
-            return await self.__wool_gather(data)
+            labels = await self.__detect_objects(data)
+            seed = seed_from(labels)
+            text = await self.__generate_text(seed)
+            return {"text": text, "labels": labels}
+
+        if path == "/len":
+            self.line_len = int(data)
+            print(self.line_len)
+            return "OK"
+
         if path == "/ping":
-            return await self.__ping()
+            return "pong"
+
         if path == "/text":
-            return await self.__generate_text(str(data))
+            text = await self.__generate_text(str(data))
+            return {"text": text}
+
         if path == "/detect":
             classes = await self.__detect_objects(data)
-            return ",".join(classes)
+            return {"labels": classes}
+
         return "Bad path"
-
-    async def __ping(self: "Server") -> str:
-        return "pong!"
-
-    async def __wool_gather(self: "Server", frame: Union[bytes, str]) -> str:
-        labels = await self.__detect_objects(frame)
-        seed = seed_from(labels)
-        text = await self.__generate_text(seed)
-        return text
 
     async def __detect_objects(
         self: "Server", frame: Union[bytes, str]
@@ -91,8 +98,8 @@ class Server(object):
         img = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
         return [label for (_, label, _) in self.object_detector.predict(img)]
 
-    async def __generate_text(self: "Server", seed: str) -> str:
-        return self.text_generator.generate(seed)
+    async def __generate_text(self: "Server", seed: str) -> List[str]:
+        return self.text_generator.sentences(seed, line_len=self.line_len)
 
 
 if __name__ == "__main__":

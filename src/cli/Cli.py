@@ -29,7 +29,7 @@ class Cli:
     def generate_text(input_text: str):
         tg = TextGenerator(model_dir="data/folktales")
         text = input_text
-        for i, line in enumerate(tg.get_sentences(text)):
+        for i, line in enumerate(tg.lines(text)):
             print(f"{i}:\t", line)
         return
 

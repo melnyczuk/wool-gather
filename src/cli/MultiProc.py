@@ -8,8 +8,8 @@ class Story:
     def generate(self: "Story", text_input: str) -> None:
         from src.app import TextGenerator
 
-        txtGen = TextGenerator(line_len=50, max_len=500)
-        for sentence in txtGen.get_sentences(text_input):
+        txtGen = TextGenerator(max_len=500)
+        for sentence in txtGen.lines(text_input, line_len=50):
             self.queue.put(sentence)
         return
 

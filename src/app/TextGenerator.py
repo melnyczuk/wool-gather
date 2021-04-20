@@ -16,7 +16,6 @@ from unidecode import unidecode
 
 
 class TextGenerator:
-    line_len: int
     max_len: int
     generator: Pipeline
     model_dir: str
@@ -29,20 +28,26 @@ class TextGenerator:
         )
         return self.__clean(data["generated_text"])
 
-    def get_sentences(
-        self: "TextGenerator",
-        seed_str: str,
+    def lines(
+        self: "TextGenerator", seed_str: str, line_len: int = 20
     ) -> List[str]:
-        return wrap(self.generate(seed_str), self.line_len)
+        return wrap(self.generate(seed_str), line_len)
+
+    def sentences(
+        self: "TextGenerator", seed_str: str, line_len: int = 20
+    ) -> List[str]:
+        return [
+            line
+            for sentence in self.generate(seed_str).split(r"([.!?]) ([A-Z])")
+            for line in wrap(sentence, line_len)
+        ]
 
     def __init__(
         self: "TextGenerator",
         model_dir: str = "data",
-        line_len: int = 20,
         max_len: int = 100,
         seed: int = 42,
     ) -> None:
-        self.line_len = line_len
         self.max_len = max_len
         self.model_dir = os.path.abspath(model_dir)
         logging.set_verbosity_error()
