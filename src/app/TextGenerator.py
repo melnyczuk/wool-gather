@@ -38,7 +38,7 @@ class TextGenerator:
     ) -> List[str]:
         return [
             line
-            for sentence in self.generate(seed_str).split(r"([.!?]) ([A-Z])")
+            for sentence in self.__split_sentences(self.generate(seed_str))
             for line in wrap(sentence, line_len)
         ]
 
@@ -68,10 +68,13 @@ class TextGenerator:
     def __model_path(self: "TextGenerator", target_file: str) -> str:
         return os.path.join(self.model_dir, target_file)
 
-    def __clean(self: "TextGenerator", input: str) -> str:
-        [*tmps, _] = re.sub(
-            r"([.!?])\s*([a-zA-Z])",
-            lambda m: f"{m.groups()[0]}|{m.groups()[1]}",
-            unidecode(input).replace("\n", " ").replace('"', ""),
-        ).split("|")
+    def __clean(self: "TextGenerator", input_str: str) -> str:
+        [*tmps, _] = self.__split_sentences(input_str)
         return " ".join(tmps)
+
+    def __split_sentences(self: "TextGenerator", input_str: str) -> List[str]:
+        return re.sub(
+            r"([.!?;])\s*([a-zA-Z])",
+            lambda m: f"{m.groups()[0]}|{m.groups()[1]}",
+            unidecode(input_str).replace("\n", " ").replace('"', ""),
+        ).split("|")

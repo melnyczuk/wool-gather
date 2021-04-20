@@ -75,7 +75,6 @@ class Server(object):
 
         if path == "/len":
             self.line_len = int(data)
-            print(self.line_len)
             return "OK"
 
         if path == "/ping":
