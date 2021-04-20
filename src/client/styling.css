@@ -1,0 +1,40 @@
+:root {
+  --text-border-width-pos: 1px;
+  --text-border-width-neg: -1px;
+  --text-border-color: black;
+}
+
+body {
+  background: blue;
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+#webcam {
+  background: black;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+#subtitles {
+  position: absolute;
+  padding: 16px;
+  margin: 64px auto;
+  width: 80vw;
+  height: auto;
+  bottom: 0;
+  left: 10vw;
+  color: white;
+  font-size: 32pt;
+  font-family: sans-serif;
+  text-align: center;
+  text-shadow: 
+    var(--text-border-width-neg) 0 var(--text-border-color), 
+    0 var(--text-border-width-pos) var(--text-border-color), 
+    var(--text-border-width-pos) 0 var(--text-border-color), 
+    0 var(--text-border-width-neg) var(--text-border-color);
+}
