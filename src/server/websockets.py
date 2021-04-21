@@ -1,5 +1,6 @@
 import asyncio
 import json
+from dataclasses import dataclass
 from asyncio.events import AbstractEventLoop
 from base64 import b64decode
 from typing import Dict, List, Union
@@ -14,10 +15,16 @@ from src.app import ObjectDetector, TextGenerator
 from src.app.utils import seed_from
 
 
+@dataclass
+class Settings:
+    test: str = "hello"
+    line_len: int = 50
+
+
 class Server(object):
     host: str
     port: int
-    line_len: int
+    settings: Settings
     object_detector: ObjectDetector
     text_generator: TextGenerator
     event_loop: AbstractEventLoop
@@ -31,10 +38,15 @@ class Server(object):
     def __init__(self: "Server", host: str = "127.0.0.1", port: int = 4242):
         self.host = host
         self.port = port
-        self.line_len = 50
+        self.settings = Settings()
         self.object_detector = ObjectDetector()
-        self.text_generator = TextGenerator(model_dir="data/folktales")
+        self.text_generator = TextGenerator()
         self.event_loop = asyncio.get_event_loop()
+
+    def __set_settings(self: "Server", data):
+        self.settings = Settings(**data)
+        print(f"Settings: {self.settings}")
+        return
 
     async def __handler(
         self: "Server",
@@ -73,12 +85,9 @@ class Server(object):
             text = await self.__generate_text(seed)
             return {"text": text, "labels": labels}
 
-        if path == "/len":
-            self.line_len = int(data)
+        if path == "/settings":
+            self.__set_settings(json.loads(data))
             return "OK"
-
-        if path == "/ping":
-            return "pong"
 
         if path == "/text":
             text = await self.__generate_text(str(data))
@@ -98,7 +107,10 @@ class Server(object):
         return [label for (_, label, _) in self.object_detector.predict(img)]
 
     async def __generate_text(self: "Server", seed: str) -> List[str]:
-        return self.text_generator.sentences(seed, line_len=self.line_len)
+        return self.text_generator.sentences(
+            seed,
+            line_len=self.settings.line_len,
+        )
 
 
 if __name__ == "__main__":
