@@ -1,7 +1,7 @@
 const { WebSocket } = window;
 
 const BASE_URL = '127.0.0.1:4242';
-const SUBTITLE_CHANGE_RATE = 2 * 1000;
+const SUBTITLE_CHANGE_RATE = 8 * 1000;
 const SUBTITLES_QUERY = '#subtitles';
 
 const settings = { line_len: 80 };
