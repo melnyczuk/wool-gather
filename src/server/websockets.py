@@ -1,9 +1,9 @@
 import asyncio
 import json
-from dataclasses import dataclass
 from asyncio.events import AbstractEventLoop
 from base64 import b64decode
-from typing import Dict, List, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Union
 
 import cv2  # type:ignore
 import numpy as np
@@ -17,7 +17,7 @@ from src.app.utils import seed_from
 
 @dataclass
 class Settings:
-    test: str = "hello"
+    model_dir: str = "data"
     line_len: int = 50
 
 
@@ -35,18 +35,26 @@ class Server(object):
         self.event_loop.run_until_complete(start)
         self.event_loop.run_forever()
 
-    def __init__(self: "Server", host: str = "127.0.0.1", port: int = 4242):
-        self.host = host
-        self.port = port
-        self.settings = Settings()
-        self.object_detector = ObjectDetector()
-        self.text_generator = TextGenerator()
-        self.event_loop = asyncio.get_event_loop()
-
-    def __set_settings(self: "Server", data):
-        self.settings = Settings(**data)
+    def set_settings(self: "Server", **new_settings: Any):
+        self.settings = Settings(**new_settings)
+        if self.settings.model_dir != self.text_generator.model_dir:
+            new_model_dir = self.settings.model_dir
+            self.text_generator = TextGenerator(model_dir=new_model_dir)
         print(f"Settings: {self.settings}")
         return
+
+    def __init__(
+        self: "Server",
+        host: str = "127.0.0.1",
+        port: int = 4242,
+        **settings: Any,
+    ):
+        self.host = host
+        self.port = port
+        self.settings = Settings(**settings)
+        self.object_detector = ObjectDetector()
+        self.text_generator = TextGenerator(model_dir=self.settings.model_dir)
+        self.event_loop = asyncio.get_event_loop()
 
     async def __handler(
         self: "Server",
@@ -86,7 +94,7 @@ class Server(object):
             return {"text": text, "labels": labels}
 
         if path == "/settings":
-            self.__set_settings(json.loads(data))
+            self.set_settings(**json.loads(data))
             return "OK"
 
         if path == "/text":
@@ -100,7 +108,8 @@ class Server(object):
         return "Bad path"
 
     async def __detect_objects(
-        self: "Server", frame: Union[bytes, str]
+        self: "Server",
+        frame: Union[bytes, str],
     ) -> List[str]:
         arr = np.frombuffer(b64decode(frame), dtype=np.uint8)
         img = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
