@@ -1,10 +1,14 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const process = require('process');
+const childProcess = require('child_process');
+
+const server = childProcess.spawn('pipenv', ['run', 'server']);
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1440,
-    height: 1080,
+    fullscreen: true,
+    title: 'wool-gather',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -30,3 +34,5 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+process.on('exit', () => server.kill());

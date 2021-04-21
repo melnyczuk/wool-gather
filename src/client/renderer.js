@@ -1,28 +1,29 @@
 const { WebSocket } = window;
 
-const BASE_URL = 'ws://127.0.0.1:4242';
-const SUBTITLE_CHANGE_RATE = 10 * 1000;
+const BASE_URL = '127.0.0.1:4242';
+const SUBTITLE_CHANGE_RATE = 8 * 1000;
 const SUBTITLES_QUERY = '#subtitles';
+
+const settings = { line_len: 80 };
 
 const streamContraints = {
   video: {
-    width: { max: 3840, ideal: 3840, min: 1920 },
-    height: { max: 2160, ideal: 2160, min: 1080 },
+    width: { max: 3840, ideal: 3840, min: 1280 },
+    height: { max: 2160, ideal: 2160, min: 720 },
     frameRate: { max: 30, ideal: 30, min: 25 },
     zoom: 100,
   },
   audio: false,
 };
 
-function sanitizeDataUrl(url) {
-  return url.replace('data:', '').replace(/^.+,/, '');
-}
-
 function getSendFrame(imageCapture, socket) {
   const reader = new FileReader();
 
   reader.onload = () => {
-    socket.send(sanitizeDataUrl(reader.result));
+    const sanitisedDataUrl = reader.result
+      .replace('data:', '')
+      .replace(/^.+,/, '');
+    socket.send(sanitisedDataUrl);
   };
 
   return () =>
@@ -55,14 +56,10 @@ function getMessageHandler(reconnect) {
 }
 
 function connect(imgCap) {
-  console.log('connecting...');
-  const socket = new WebSocket(BASE_URL);
-
+  const socket = new WebSocket(`ws://${BASE_URL}`);
   const sendFrame = getSendFrame(imgCap, socket);
   const handler = getMessageHandler(() => connect(imgCap));
-
   socket.onmessage = ({ data }) => handler(data);
-  socket.onclose = () => console.log('disconnected');
   socket.onerror = (e) => console.error(e);
   socket.onopen = () => sendFrame();
 }
@@ -73,15 +70,21 @@ function handleStream(stream) {
   document.getElementById('webcam').srcObject = stream;
 }
 
-const lenSocket = new WebSocket(`${BASE_URL}/len`);
-lenSocket.onopen = () => lenSocket.send(80);
+function main() {
+  const settingSocket = new WebSocket(`ws://${BASE_URL}/settings`);
+  settingSocket.onopen = () => settingSocket.send(JSON.stringify(settings));
+  settingSocket.onmessage = () => {
+    navigator.mediaDevices
+      .getUserMedia(streamContraints)
+      .then(handleStream)
+      .catch(console.error);
+  };
+}
 
-const pingSocket = new WebSocket(`${BASE_URL}/ping`);
-pingSocket.onopen = () => pingSocket.send('ping...');
-pingSocket.onclose = () => console.log('');
-pingSocket.onmessage = () => {
-  navigator.mediaDevices
-    .getUserMedia(streamContraints)
-    .then(handleStream)
-    .catch(console.error);
-};
+function ping() {
+  return fetch(`http://${BASE_URL}`)
+    .then(() => main())
+    .catch(() => ping());
+}
+
+ping();
