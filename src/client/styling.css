@@ -1,6 +1,6 @@
 :root {
-  --text-border-width-pos: 1px;
-  --text-border-width-neg: -1px;
+  --text-border-width-pos: 3px;
+  --text-border-width-neg: -3px;
   --text-border-color: black;
 }
 
